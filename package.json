@@ -1,15 +1,30 @@
 {
   "name": "custom-error-generator",
-  "version": "0.0.0",
-  "description": "",
+  "version": "1.0.0",
+  "description": "Custom errors and exceptions in Node.js, done right",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make test"
   },
-  "author": "",
+  "author": "Jesse Proulx <github@jproulx.net>",
   "license": "ISC",
   "devDependencies": {
     "mocha": "^1.18.2",
     "should": "^3.3.1"
-  }
+  },
+  "dependencies": {
+    "should": "~3.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jproulx/node-custom-error.git"
+  },
+  "keywords": [
+    "error",
+    "errors"
+  ],
+  "bugs": {
+    "url": "https://github.com/jproulx/node-custom-error/issues"
+  },
+  "homepage": "https://github.com/jproulx/node-custom-error"
 }
