@@ -69,7 +69,7 @@ describe('Custom Errors', function () {
         error2.foo.should.equal('bar');
         return done();
     });
-    it('should require a name', function (done) {
+    it('should validate arguments before creating errors', function (done) {
         function create () {
             var args = Array.prototype.slice.call(arguments);
             return function () {
@@ -77,6 +77,7 @@ describe('Custom Errors', function () {
             };
         }
         create().should.throw();
+        create('Testing', {}, {}).should.throw();
         return done();
 
     });
