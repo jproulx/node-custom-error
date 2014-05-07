@@ -79,6 +79,5 @@ describe('Custom Errors', function () {
         create().should.throw();
         create('Testing', {}, {}).should.throw();
         return done();
-
     });
 });
