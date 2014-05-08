@@ -78,6 +78,7 @@ describe('Custom Errors', function () {
         }
         create().should.throw();
         create('Testing', {}, {}).should.throw();
+        create('Testing', {}).should.not.throw();
         return done();
     });
 });
