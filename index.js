@@ -1,29 +1,34 @@
 /*jshint node: true */
 "use strict";
 var assert = require('assert');
+/**
+ * Create a custom error generator
+ *
+ * @param   {String}    name        The error name
+ * @param   {Object}    parameters  An optional set of key=value pairs to attach to errors
+ * @param   {Function}  Parent      An optional parent Error class to inherit from
+ * @return  {Function}
+ */
 module.exports = function createError (name, parameters, Parent) {
     // Custom errors require an explicit name.
     if (!name) {
         throw new TypeError('A custom error name is required');
     }
     var properties = {};
+    // Add object members to properties definition
+    function addObjectToProperties (object) {
+        Object.keys(object).forEach(function (property) {
+            properties[property] = {
+                'value'        : object[property],
+                'enumerable'   : false,
+                'writable'     : true,
+                'configurable' : true
+            };
+        });
+    }
     // Set up the custom properties for this Error object, if specified.
     if (parameters) {
-        Object.keys(parameters).forEach(function (property) {
-            // If we were passed an object descriptor, preserve it
-            if (typeof parameters[property] == 'object' && typeof parameters[property].enumerable !== 'undefined') {
-                properties[property] = parameters[property];
-            // Otherwise create an object descriptor based on the parameter
-            } else {
-                properties[property] = {
-                    'value'        : parameters[property],
-                    'enumerable'   : false,
-                    'writable'     : true,
-                    'configurable' : true
-                };
-            }
-        });
-        delete properties.message;
+        addObjectToProperties(parameters);
     }
     // If a parent is specified and is a valid Error constructor,
     // inherit from its prototype
@@ -49,7 +54,7 @@ module.exports = function createError (name, parameters, Parent) {
     // The custom error function that's returned. Since it always creates a new
     // exception, we don't have to worry if itself was invoked with a new
     // operator or not.
-    function CustomError () {
+    function CustomError (message) {
         var args   = Array.prototype.slice.call(arguments);
         var length = args.length;
         var proxy  = source.apply(null, args);
@@ -60,10 +65,13 @@ module.exports = function createError (name, parameters, Parent) {
         var sub = [];
         // Loop through the arguments and detect any errors that were passed in.
         // These are treated as sub errors and affect the stack
+        args.reverse();
         while (length--) {
             var param = args[length];
             if (param instanceof Error) {
                 sub.push(param);
+            } else if (typeof param == 'object') {
+                addObjectToProperties(param);
             }
         }
         // If we have any errors that were passed in, replace the stack
@@ -71,6 +79,12 @@ module.exports = function createError (name, parameters, Parent) {
         if (sub.length > 0) {
             properties.stack = {
                 'get' : createStackDescriptor(sub, stackDescriptor)
+            };
+        }
+        // Always set the message manually, in case there was a default supplied
+        if (String(message)) {
+            properties.message = {
+                'value' : String(message)
             };
         }
         // Pass in our extra properties
