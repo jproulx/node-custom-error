@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang="en"><head><title>index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="index"><meta name="groc-project-path" content="README.md"><meta name="groc-github-url" content="https://github.com/jproulx/node-custom-error"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path"><a href="https://github.com/jproulx/node-custom-error/blob/master/README.md">README.md</a></div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="node-custom-error">node-custom-error</h1>
+
+<p><a href="https://travis-ci.org/jproulx/node-custom-error"><img src="https://travis-ci.org/jproulx/node-custom-error.svg?branch=master" alt="Build Status" title="" /></a></p>
+
+<p>Custom errors and exceptions in Node.js, done right.</p>
+
+<h2 id="install">Install</h2>
+
+<pre><code class="bash">$ npm install custom-error-generator --save
+</code></pre>
+
+<h2 id="usage">Usage</h2>
+
+<pre><code class="javascript">var createCustomError = require('custom-error-generator');
+var ValidationError = createCustomError('ValidationError', { 'required', 'Missing parameter x' }, TypeError);
+var HTTPError = createCustomError('HTTPError', { 'code' : 500, 'status' : 'Server Error' });
+
+throw new ValidationError('Required');
+</code></pre>
+
+<p>The generator function supports the following parameters:</p>
+
+<ul>
+<li><p><code>name</code> {String} (required) - A custom name for this error type, which is printed when logging and in stack traces</p></li>
+<li><p><code>data</code> {Object} (optional) - Additional properties to attach to the error, in key=value pairs or as object descriptors</p></li>
+<li><p><code>parent</code> {Function} (optional) - A parent Error to subclass from. If supplied, is required to be a prototype of the built-in Error function</p></li>
+</ul>
+
+<p>The errors created by the generated functions are identical to built-in Error objects, with additional features such as:</p>
+
+<p>Custom properties can be attached and accessed at run time:</p>
+
+<pre><code class="javascript">var error = new HTTPError('Uh oh');
+console.log(error.code, error.status); // prints 500 Server Error
+</code></pre>
+
+<p>Other errors can be passed in as arguments, which augment the available stack trace:</p>
+
+<pre><code class="javascript">var error = new ValidationError('Missing field');
+var serverError = new HTTPError('Something went wrong', error);
+console.log(serverError.stack);
+</code></pre>
+
+<p>outputs:</p>
+
+<pre><code class="bash">HTTPError: Something went wrong
+    at Context.&lt;anonymous&gt; (/Projects/node-custom-error/test.js:19:24)
+    at callFn (/Projects/node-custom-error/node_modules/mocha/lib/runnable.js:223:21)
+    at Hook.Runnable.run (/Projects/node-custom-error/node_modules/mocha/lib/runnable.js:216:7)
+    at next (/Projects/node-custom-error/node_modules/mocha/lib/runner.js:259:10)
+    at Object._onImmediate (/Projects/node-custom-error/node_modules/mocha/lib/runner.js:276:5)
+    at processImmediate [as _immediateCallback] (timers.js:330:15)
+ValidationError: Missing field
+    at Context.&lt;anonymous&gt; (/Projects/node-custom-error/test.js:18:24)
+    at callFn (/Projects/node-custom-error/node_modules/mocha/lib/runnable.js:223:21)
+    at Hook.Runnable.run (/Projects/node-custom-error/node_modules/mocha/lib/runnable.js:216:7)
+    at next (/Projects/node-custom-error/node_modules/mocha/lib/runner.js:259:10)
+    at Object._onImmediate (/Projects/node-custom-error/node_modules/mocha/lib/runner.js:276:5)
+    at processImmediate [as _immediateCallback] (timers.js:330:15)
+</code></pre>
+
+<p>Errors can also be serialized into JSON format by using <code>error#toJSON();</code>. This will enumerate all of the hidden and custom properties, and also format the stack trace into an array of individual lines:</p>
+
+<pre><code class="javascript">console.log(error.toJSON()); // or console.log(JSON.stringify(error));
+</code></pre>
+
+<p>outputs</p>
+
+<pre><code class="bash">{ stack:
+   [ 'ValidationError: Missing field',
+     '    at Context.&lt;anonymous&gt; (/Projects/node-custom-error/test.js:17:24)',
+     '    at callFn (/Projects/node-custom-error/node_modules/mocha/lib/runnable.js:223:21)',
+     '    at Hook.Runnable.run (/Projects/node-custom-error/node_modules/mocha/lib/runnable.js:216:7)',
+     '    at next (/Projects/node-custom-error/node_modules/mocha/lib/runner.js:259:10)',
+     '    at Object._onImmediate (/Projects/node-custom-error/node_modules/mocha/lib/runner.js:276:5)',
+     '    at processImmediate [as _immediateCallback] (timers.js:330:15)' ],
+  arguments: undefined,
+  type: undefined,
+  required: 'Missing parameter x',
+  message: 'Missing Field' }
+</code></pre>
+
+<h2 id="notes">Notes</h2>
+
+<p>Care is taken to preserve the built-in error handling behavior as much as possible, supporting:</p>
+
+<ul>
+<li><p><code>custom instanceOf Error</code></p></li>
+<li><p><code>Error.prototype.isPrototypeOf(custom)</code></p></li>
+<li><p><code>util.isError(custom)</code></p></li>
+<li><p><code>custom = generator('message')</code></p></li>
+<li><p><code>custom = new generator('message');</code></p></li>
+</ul>
+
+<p>In other words, you shouldn't have to worry about these errors affecting your syntax or existing code. Simply drop in place for any existing errors you're throwing and it should work just the same.</p></div></div></div></div></body></html>
