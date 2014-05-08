@@ -2,7 +2,7 @@
   "name": "custom-error-generator",
   "version": "4.0.0",
   "description": "Custom errors and exceptions in Node.js, done right",
-  "main": "index.js",
+  "main": "error.js",
   "scripts": {
     "test": "make test"
   },

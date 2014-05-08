@@ -1,5 +1,5 @@
 var should = require('should');
-var generateCustomError = require('./index');
+var generateCustomError = require('./');
 var util = require('util');
 
 var TestError       = generateCustomError('TestError');
