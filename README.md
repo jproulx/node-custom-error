@@ -1,5 +1,7 @@
 node-custom-error
 ===================
+[![Build Status](https://travis-ci.org/jproulx/node-custom-error.svg?branch=master)](https://travis-ci.org/jproulx/node-custom-error)
+
 Custom errors and exceptions in Node.js, done right.
 
 ## Install
