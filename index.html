@@ -1,8 +1,10 @@
 <!DOCTYPE html><html lang="en"><head><title>index</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="index"><meta name="groc-project-path" content="README.md"><meta name="groc-github-url" content="https://github.com/jproulx/node-custom-error"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path"><a href="https://github.com/jproulx/node-custom-error/blob/master/README.md">README.md</a></div></div><div id="document"><div class="segment"><div class="comments "><div class="wrapper"><h1 id="node-custom-error">node-custom-error</h1>
 
-<p><a href="https://travis-ci.org/jproulx/node-custom-error"><img src="https://travis-ci.org/jproulx/node-custom-error.svg?branch=master" alt="Build Status" title="" /></a></p>
+<p><a href="https://travis-ci.org/jproulx/node-custom-error"><img src="https://travis-ci.org/jproulx/node-custom-error.svg?branch=master" alt="Build Status" title="" /></a><a href="https://david-dm.org/jproulx/node-custom-error#info=devDependencies"><img src="https://david-dm.org/jproulx/node-custom-error/dev-status.svg" alt="devDependency Status" title="" /></a><a href="https://codeclimate.com/github/jproulx/node-custom-error"><img src="https://codeclimate.com/github/jproulx/node-custom-error.png" alt="Code Climate" title="" /></a><a href="https://codeclimate.com/github/jproulx/node-custom-error"><img src="https://codeclimate.com/github/jproulx/node-custom-error/coverage.png" alt="CodeClimate" title="" /></a></p>
 
-<p>Custom errors and exceptions in Node.js, done right.</p>
+<p><a href="https://nodei.co/npm/custom-error-generator/"><img src="https://nodei.co/npm/custom-error-generator.png" alt="NPM" title="" /></a></p>
+
+<p>Custom errors and exceptions in Node.js</p>
 
 <h2 id="install">Install</h2>
 
@@ -24,6 +26,7 @@ throw new ValidationError('Required');
 <li><p><code>name</code> {String} (required) - A custom name for this error type, which is printed when logging and in stack traces</p></li>
 <li><p><code>data</code> {Object} (optional) - Additional properties to attach to the error, in key=value pairs or as object descriptors</p></li>
 <li><p><code>parent</code> {Function} (optional) - A parent Error to subclass from. If supplied, is required to be a prototype of the built-in Error function</p></li>
+<li><p><code>Constructor</code> {Function} (optional) - A function to subclass from entirely. Allows for additional methods and properties to be defined on your custom errors</p></li>
 </ul>
 
 <p>The errors created by the generated functions are identical to built-in Error objects, with additional features such as:</p>
@@ -34,7 +37,17 @@ throw new ValidationError('Required');
 console.log(error.code, error.status); // prints 500 Server Error
 </code></pre>
 
-<p>Other errors can be passed in as arguments, which augment the available stack trace:</p>
+<h2 id="formatting">Formatting</h2>
+
+<p>Similar to <code>console.log</code>, the custom error message will be formatted from all available string and number arguments, using <code>util.format</code>:</p>
+
+<pre><code class="javascript">var error = new ValidationError('%s: %s', 'Missing Field', 'name');
+console.log(error); // prints ValidationError: Missing Field: name
+</code></pre>
+
+<h2 id="wrapped-errors">Wrapped errors</h2>
+
+<p>Other error objects can be passed in as arguments, which augment the original error stack trace with their own stack traces:</p>
 
 <pre><code class="javascript">var error = new ValidationError('Missing field');
 var serverError = new HTTPError('Something went wrong', error);
@@ -59,6 +72,10 @@ ValidationError: Missing field
     at processImmediate [as _immediateCallback] (timers.js:330:15)
 </code></pre>
 
+<p>Multiple error objects are allowed to be passed, and are processed in order.</p>
+
+<h2 id="json-support">JSON support</h2>
+
 <p>Errors can also be serialized into JSON format by using <code>error#toJSON();</code>. This will enumerate all of the hidden and custom properties, and also format the stack trace into an array of individual lines:</p>
 
 <pre><code class="javascript">console.log(error.toJSON()); // or console.log(JSON.stringify(error));
@@ -78,6 +95,23 @@ ValidationError: Missing field
   type: undefined,
   required: 'Missing parameter x',
   message: 'Missing Field' }
+</code></pre>
+
+<h2 id="custom-constructor">Custom Constructor</h2>
+
+<p>Finally, a custom function can be passed in as the 4th argument. This will allow you to modify the custom error prototype without having to modify the original native Error prototype:</p>
+
+<pre><code class="javascript">var HTTPError = createCustomError('HTTPError', null, TypeError, function (message, code) {
+    var http = require('http');
+    // Set custom properties when thrown based on additional arguments
+    this.code = code;
+    this.status = http.STATUS_CODES[code];
+    // We can override the default message logic if desired:
+    this.message = message;
+});
+var error = new HTTPError('You do not have permission', 403);
+console.log(error, [error.code, error.status]);
+// result: HTTPError: You do not have permission [ 403, "Forbidden" ]
 </code></pre>
 
 <h2 id="notes">Notes</h2>
