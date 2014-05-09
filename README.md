@@ -2,7 +2,9 @@ node-custom-error
 ===================
 [![Build Status](https://travis-ci.org/jproulx/node-custom-error.svg?branch=master)](https://travis-ci.org/jproulx/node-custom-error)
 
-Custom errors and exceptions in Node.js, done right.
+[![NPM](https://nodei.co/npm/custom-error-generator.png)](https://nodei.co/npm/custom-error-generator/)
+
+Custom errors and exceptions in Node.js
 
 ## Install
 
@@ -28,6 +30,8 @@ The generator function supports the following parameters:
 
 * `parent` {Function} (optional) - A parent Error to subclass from. If supplied, is required to be a prototype of the built-in Error function
 
+* `Constructor` {Function} (optional) - A function to subclass from entirely. Allows for additional methods and properties to be defined on your custom errors
+
 The errors created by the generated functions are identical to built-in Error objects, with additional features such as:
 
 Custom properties can be attached and accessed at run time:
@@ -36,7 +40,17 @@ var error = new HTTPError('Uh oh');
 console.log(error.code, error.status); // prints 500 Server Error
 ```
 
-Other errors can be passed in as arguments, which augment the available stack trace:
+## Formatting
+
+Similar to `console.log`, the custom error message will be formatted from all available string and number arguments, using `util.format`:
+```javascript
+var error = new ValidationError('%s: %s', 'Missing Field', 'name');
+console.log(error); // prints ValidationError: Missing Field: name
+```
+
+## Wrapped errors
+
+Other error objects can be passed in as arguments, which augment the original error stack trace with their own stack traces:
 ```javascript
 var error = new ValidationError('Missing field');
 var serverError = new HTTPError('Something went wrong', error);
@@ -59,7 +73,9 @@ ValidationError: Missing field
     at Object._onImmediate (/Projects/node-custom-error/node_modules/mocha/lib/runner.js:276:5)
     at processImmediate [as _immediateCallback] (timers.js:330:15)
 ```
+Multiple error objects are allowed to be passed, and are processed in order.
 
+## JSON support
 Errors can also be serialized into JSON format by using `error#toJSON();`. This will enumerate all of the hidden and custom properties, and also format the stack trace into an array of individual lines:
 
 ```javascript
@@ -79,6 +95,23 @@ outputs
   type: undefined,
   required: 'Missing parameter x',
   message: 'Missing Field' }
+```
+
+## Custom Constructor
+Finally, a custom function can be passed in as the 4th argument. This will allow you to modify the custom error prototype without having to modify the original native Error prototype:
+
+```javascript
+var HTTPError = createCustomError('HTTPError', null, TypeError, function (message, code) {
+    var http = require('http');
+    // Set custom properties when thrown based on additional arguments
+    this.code = code;
+    this.status = http.STATUS_CODES[code];
+    // We can override the default message logic if desired:
+    this.message = message;
+});
+var error = new HTTPError('You do not have permission', 403);
+console.log(error, [error.code, error.status]);
+// result: HTTPError: You do not have permission [ 403, "Forbidden" ]
 ```
 
 ## Notes

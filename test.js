@@ -2,17 +2,29 @@ var should = require('should');
 var generateCustomError = require('./');
 var util = require('util');
 
-var TestError       = generateCustomError('TestError');
-var SubTestError    = generateCustomError('TestError',    {}, TestError);
-var SubTypeError    = generateCustomError('SubTypeError', {}, TypeError);
-var ValidationError = generateCustomError('ValidationError', { 'message' : 'Default Message', 'bar' : 'baz' }, TypeError);
+var TestError       = generateCustomError('TestError', { 'code' : 100, 'status' : 'blah' });
+var SubTestError    = generateCustomError('TestError', null, TestError);
+var SubTypeError    = generateCustomError('SubTypeError', null, TypeError);
+var ValidationError = generateCustomError('ValidationError', {
+    'message' : 'Default Message',
+    'bar' : 'baz'
+}, TypeError);
 ValidationError.prototype.foo = 'bar';
+
+function formatter(message) {
+    this.newMessage = message;
+}
+formatter.prototype.method = function () {
+    return 123;
+};
+var CustomError = generateCustomError('CustomError', { 'code' : 200 }, TypeError, formatter);
 
 var errors = {
     'with new operator'          : new TestError('Message'),
     'without new operator'       : TestError('Message'),
     'with inherited constructor' : new SubTestError('Message')
 };
+
 describe('The custom error generator', function () {
     function create () {
         var args = Array.prototype.slice.call(arguments);
@@ -20,7 +32,7 @@ describe('The custom error generator', function () {
             return generateCustomError.apply(null, args);
         };
     }
-    var error = new ValidationError('Missing field');
+    var error = new ValidationError('%s', 'Missing field', 1, 2);
     it('should require a valid name parameter', function (done) {
         create().should.throw();
         create(null).should.throw();
@@ -30,9 +42,13 @@ describe('The custom error generator', function () {
         return done();
     });
     it('should require inheritance from the Error prototype, if supplied', function (done) {
-        create('Testing', {}, {}).should.throw();
-        create('Testing', {}, TypeError).should.not.throw();
-        create('Testing', {}, TestError).should.not.throw();
+        create('Testing', null, {}).should.throw();
+        create('Testing', null, TypeError).should.not.throw();
+        create('Testing', null, TestError).should.not.throw();
+        return done();
+    });
+    it('should be a valid Constructor function, if supplied', function (done) {
+        create('Testing', null, TypeError, {}).should.throw();
         return done();
     });
     it('should inherit from a parent Error, if supplied', function (done) {
@@ -67,12 +83,18 @@ describe('The custom error generator', function () {
         suberror.stack.should.containEql('ValidationError: Missing field');
         return done();
     });
-    it('should attach object keys to itself when an object is passed in', function (done) {
-        var suberror = new SubTypeError('Testing', {
-            'q' : 's'
-        });
-        suberror.should.have.property('q');
-        suberror.q.should.equal('s');
+    it('should format error arguments into error message based on util#format', function (done) {
+        var suberror = new SubTypeError('%s:%s:%s', 'foo', 'bar', 'baz');
+        suberror.should.have.property('message');
+        suberror.message.should.equal('foo:bar:baz');
+        return done();
+    });
+    it('should allow for a custom constructor', function (done) {
+        var testerror = new CustomError('This is my message');
+        testerror.should.have.property('newMessage');
+        testerror.newMessage.should.equal('This is my message');
+        testerror.should.have.property('method');
+        testerror.method().should.equal(123);
         return done();
     });
 });
