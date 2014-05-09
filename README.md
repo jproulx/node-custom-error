@@ -1,10 +1,8 @@
 node-custom-error
 ===================
-[![Build Status](https://travis-ci.org/jproulx/node-custom-error.svg?branch=master)](https://travis-ci.org/jproulx/node-custom-error)
+[![Build Status](https://travis-ci.org/jproulx/node-custom-error.svg?branch=master)](https://travis-ci.org/jproulx/node-custom-error)[![devDependency Status](https://david-dm.org/jproulx/node-custom-error/dev-status.svg)](https://david-dm.org/jproulx/node-custom-error#info=devDependencies)
 
 [![NPM](https://nodei.co/npm/custom-error-generator.png)](https://nodei.co/npm/custom-error-generator/)
-
-[![devDependency Status](https://david-dm.org/jproulx/node-custom-error/dev-status.svg)](https://david-dm.org/jproulx/node-custom-error#info=devDependencies)
 
 Custom errors and exceptions in Node.js
 
