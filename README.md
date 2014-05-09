@@ -4,6 +4,8 @@ node-custom-error
 
 [![NPM](https://nodei.co/npm/custom-error-generator.png)](https://nodei.co/npm/custom-error-generator/)
 
+[![devDependency Status](https://david-dm.org/jproulx/node-custom-error/dev-status.svg)](https://david-dm.org/jproulx/node-custom-error#info=devDependencies)
+
 Custom errors and exceptions in Node.js
 
 ## Install
