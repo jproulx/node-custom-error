@@ -1,6 +1,6 @@
 {
   "name": "custom-error-generator",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "description": "Custom errors and exceptions in Node.js",
   "main": "error.js",
   "scripts": {
