@@ -20,7 +20,8 @@
   "devDependencies": {
     "mocha": "",
     "should": "",
-    "blanket": ""
+    "blanket": "",
+    "mocha-lcov-reporter": ""
   },
   "repository": {
     "type": "git",
