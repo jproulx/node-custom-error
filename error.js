@@ -1,4 +1,3 @@
-/*jshint node: true */
 "use strict";
 var util = require('util');
 /**
@@ -101,6 +100,7 @@ module.exports = function createError (name, parameters, Parent, Constructor) {
         proxy.__proto__ = CustomError.prototype;
         return proxy;
     }
+    // If we're given a constructor, copy its properties onto the prototype we want to inherit
     if (Constructor) {
         var props = {};
         Object.getOwnPropertyNames(Constructor.prototype).forEach(function (name) {
