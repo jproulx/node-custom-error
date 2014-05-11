@@ -25,8 +25,7 @@ throw new ValidationError('Required');
 <ul>
 <li><p><code>name</code> {String} (required) - A custom name for this error type, which is printed when logging and in stack traces</p></li>
 <li><p><code>data</code> {Object} (optional) - Additional properties to attach to the error, in key=value pairs or as object descriptors</p></li>
-<li><p><code>parent</code> {Function} (optional) - A parent Error to subclass from. If supplied, is required to be a prototype of the built-in Error function</p></li>
-<li><p><code>Constructor</code> {Function} (optional) - A function to subclass from entirely. Allows for additional methods and properties to be defined on your custom errors</p></li>
+<li><p><code>Constructor</code> {Function} (optional) - A function to inherit from. Allows for additional methods and properties to be defined on your custom errors</p></li>
 </ul>
 
 <p>The errors created by the generated functions are identical to built-in Error objects, with additional features such as:</p>
@@ -99,9 +98,9 @@ ValidationError: Missing field
 
 <h2 id="custom-constructor">Custom Constructor</h2>
 
-<p>Finally, a custom function can be passed in as the 4th argument. This will allow you to modify the custom error prototype without having to modify the original native Error prototype:</p>
+<p>Finally, a custom function can be passed in as a 3rd argument. This will allow you to modify the custom error prototype without having to modify the original native Error prototype:</p>
 
-<pre><code class="javascript">var HTTPError = createCustomError('HTTPError', null, TypeError, function (message, code) {
+<pre><code class="javascript">var HTTPError = createCustomError('HTTPError', null, function (message, code) {
     var http = require('http');
     // Set custom properties when thrown based on additional arguments
     this.code = code;
