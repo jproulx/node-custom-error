@@ -26,7 +26,9 @@
     "blanket": "",
     "mocha-lcov-reporter": "",
     "jshint": "",
-    "travis-cov": ""
+    "travis-cov": "",
+    "codeclimate-test-reporter": "0.0.3",
+    "coveralls": "^2.10.0"
   },
   "repository": {
     "type": "git",

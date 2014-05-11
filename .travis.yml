@@ -8,7 +8,4 @@ branches:
   only:
     - master
 
-addons:
-  code_climate:
-    repo_token:
-      secure: "Mx2IJHPiY7JSwyXhxxbFtBKpqPSqxFhpodnc/CRysUtslxmbGYdF3pFOcv881YKiwHlTbM9jEAoy455dCp6q48Oo+Vj/5eSkd1lSldwAWR0ofX+TKeUp8u76VwvgPCR6FaUm/BHxGvio+EcYBJ7HlbPNIPX2pxjrlUd1LVFczIM="
+script: make test-all
