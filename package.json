@@ -13,6 +13,9 @@
     "blanket": {
       "pattern": "/error.js",
       "data-cover-never": "node_modules"
+    },
+    "travis-cov": {
+      "threshold": 80
     }
   },
   "author": "Jesse Proulx <github@jproulx.net>",
@@ -21,7 +24,9 @@
     "mocha": "",
     "should": "",
     "blanket": "",
-    "mocha-lcov-reporter": ""
+    "mocha-lcov-reporter": "",
+    "jshint": "",
+    "travis-cov": ""
   },
   "repository": {
     "type": "git",

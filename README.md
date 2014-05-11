@@ -28,9 +28,7 @@ The generator function supports the following parameters:
 
 * `data` {Object} (optional) - Additional properties to attach to the error, in key=value pairs or as object descriptors
 
-* `parent` {Function} (optional) - A parent Error to subclass from. If supplied, is required to be a prototype of the built-in Error function
-
-* `Constructor` {Function} (optional) - A function to subclass from entirely. Allows for additional methods and properties to be defined on your custom errors
+* `Constructor` {Function} (optional) - A function to inherit from. Allows for additional methods and properties to be defined on your custom errors
 
 The errors created by the generated functions are identical to built-in Error objects, with additional features such as:
 
@@ -98,10 +96,10 @@ outputs
 ```
 
 ## Custom Constructor
-Finally, a custom function can be passed in as the 4th argument. This will allow you to modify the custom error prototype without having to modify the original native Error prototype:
+Finally, a custom function can be passed in as a 3rd argument. This will allow you to modify the custom error prototype without having to modify the original native Error prototype:
 
 ```javascript
-var HTTPError = createCustomError('HTTPError', null, TypeError, function (message, code) {
+var HTTPError = createCustomError('HTTPError', null, function (message, code) {
     var http = require('http');
     // Set custom properties when thrown based on additional arguments
     this.code = code;
