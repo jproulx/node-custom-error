@@ -5,28 +5,34 @@ var util = require('util');
  *
  * @param   {String}    name        The error name
  * @param   {Object}    parameters  An optional set of key=value pairs to attach to errors
- * @param   {Function}  Parent      An optional parent Error class to inherit from
- * @param   {Function}  Constructor An optional constructor to inherit additional properties from
+ * @param   {Function}  Constructor      An optional parent Error class to inherit from
  * @return  {Function}
  */
-module.exports = function createError (name, parameters, Parent, Constructor) {
+module.exports = function createError (name, parameters, Constructor) {
     if (!name) {
         throw new TypeError('A custom error name is required');
     }
-    if (Parent) {
-        if (typeof Parent != 'function' || !Error.prototype.isPrototypeOf(Parent.prototype)) {
-            throw new TypeError('The parent should inherit from Error.prototype');
+    // Check to make sure we're inheriting from a regular function first
+    if (Constructor && typeof Constructor == 'function') {
+        // If we're not starting from the Error prototype, add the Error prototype
+        // to the Constructor prototype chain
+        if (!Error.prototype.isPrototypeOf(Constructor.prototype)) {
+            var parentProto = { };
+            Object.getOwnPropertyNames(Constructor.prototype).forEach(function (name) {
+                parentProto[name] = Object.getOwnPropertyDescriptor(Constructor.prototype, name);
+            });
+            Constructor.prototype = Object.create(Error.prototype, parentProto);
         }
+    // Otherwise simply inherit from the Error built-in
+    } else {
+        Constructor = Error;
     }
-    if (Constructor && typeof Constructor != 'function') {
-        throw new TypeError('The constructor should be a function');
-    }
+    // If we're given additional parameters, attach them to the created object
     var properties = {};
-    // Add object members to properties definition
-    function addObjectToProperties (object) {
-        Object.keys(object).forEach(function (property) {
+    if (parameters) {
+        Object.keys(parameters).forEach(function (property) {
             properties[property] = {
-                'value'        : object[property],
+                'value'        : parameters[property],
                 'enumerable'   : true,
                 'writable'     : true,
                 'configurable' : true
@@ -34,23 +40,14 @@ module.exports = function createError (name, parameters, Parent, Constructor) {
         });
     }
     // Set up the custom properties for this Error object, if specified.
-    if (parameters) {
-        addObjectToProperties(parameters);
-    }
-    // If a parent is specified and is a valid Error constructor,
-    // inherit from its prototype
-    var source = Error;
-    if (Parent) {
-        source = Parent;
-    }
     // Create a new stack descriptor that includes the stacks for any errors
     // also passed in
-    function createStackDescriptor (error, previous) {
+    function createStackDescriptor (errors, previous) {
         return function () {
             var stack = previous.get();
-            error.forEach(function (err) {
+            errors.forEach(function (error) {
                 stack += '\n';
-                stack += err.stack;
+                stack += error.stack;
             });
             return stack;
         };
@@ -58,31 +55,37 @@ module.exports = function createError (name, parameters, Parent, Constructor) {
     // The custom error function that's returned. Since it always creates a new
     // exception, we don't have to worry if itself was invoked with a new
     // operator or not.
-    function CustomError () {
-        var proxy  = source.apply(null, arguments);
+    function CustomError (message) {
+        // We start by simply creating a new error object, so that we preserve
+        // the runtime error logic
+        var proxy = new Error(message);
+        // We want to call our constructor on the error object itself,
+        Constructor.apply(this, arguments);
+        // We also want to preserve the inheritance logic in the prototype chain
+        Constructor.apply(proxy, arguments);
         // Capture the stack trace at the appropriate stack location
         Error.captureStackTrace(proxy, CustomError);
         // Make a backup of our existing stack descriptor
         var stackDescriptor = Object.getOwnPropertyDescriptor(proxy, 'stack');
-        var sub = [];
+        // We now loop through all of the arguments to collect any sub errors,
+        // And to allow for custom string formatting with the message
+        var errors   = [];
         var messages = [];
-        // Loop through the arguments and detect any errors that were passed in.
-        // These are treated as sub errors and affect the stack
-        var length = arguments.length;
-        var index  = length;
+        var length   = arguments.length;
+        var index    = length;
         while (index--) {
             var param = arguments[length - index - 1];
             if (param instanceof Error) {
-                sub.push(param);
+                errors.push(param);
             } else if (typeof param == 'string' || typeof param == 'number') {
                 messages.push(param);
             }
         }
         // If we have any errors that were passed in, replace the stack
         // descriptor that includes the other error stacks
-        if (sub.length > 0) {
+        if (errors.length > 0) {
             properties.stack = {
-                'get' : createStackDescriptor(sub, stackDescriptor)
+                'get' : createStackDescriptor(errors, stackDescriptor)
             };
         }
         // Always set the message manually, in case there was a default supplied
@@ -92,50 +95,47 @@ module.exports = function createError (name, parameters, Parent, Constructor) {
         };
         // Pass in our extra properties
         Object.defineProperties(proxy, properties);
-        // If we were given a constructor function, apply it here after we set our initial properties
-        if (Constructor) {
-            Constructor.apply(proxy, arguments);
-        }
         // Replace the error prototype with our own
-        proxy.__proto__ = CustomError.prototype;
+        proxy.__proto__ = Object.create(CustomError.prototype, properties);
         return proxy;
     }
-    // If we're given a constructor, copy its properties onto the prototype we want to inherit
-    if (Constructor) {
-        var props = {};
-        Object.getOwnPropertyNames(Constructor.prototype).forEach(function (name) {
-            props[name] = Object.getOwnPropertyDescriptor(Constructor.prototype, name);
-            props[name].enumerable = false;
-        });
-        Constructor.prototype = Object.create(source.prototype, props);
-    }
-    // Copying from the Error prototype allows us to preserve the built-in error checks
-    CustomError.prototype = Object.create(Constructor ? Constructor.prototype : source.prototype, {
-        // We don't want to replace our constructor
-        'constructor' : {
+    // Set up the new prototype
+    var proto = {
+        'constructor'      : {
             'value'        : CustomError,
             'writable'     : true,
             'configurable' : true
         },
-        // Rename our constructor to the supplied name
-        'name' : {
+        'name'             : {
             'value'        : name,
             'enumerable'   : false,
             'writable'     : true,
             'configurable' : true
         },
-        // Add an easy method of serializing this error into JSON format
-        'toJSON' : {
-            'value' : function () {
+        'toJSON'           : {
+            'enumerable'   : false,
+            'configurable' : false,
+            'value'        : function () {
                 var json =  {};
                 Object.getOwnPropertyNames(this).forEach(function (name) {
                     json[name] = name == 'stack' ? this[name].split('\n') : this[name];
                 }, this);
                 return json;
-            },
-            'enumerable'   : false,
-            'configurable' : false
+            }
         }
-    });
+    };
+    // Also set the passed in parameters on the prototype if it's inherited later
+    if (parameters) {
+        Object.keys(parameters).forEach(function (name) {
+            proto[name] = {
+                'value' : parameters[name],
+                'enumerable'   : true,
+                'writable'     : true,
+                'configurable' : true
+            };
+        });
+    }
+    // Copying from the Error prototype allows us to preserve the built-in error checks
+    CustomError.prototype = Object.create(Constructor.prototype, proto);
     return CustomError;
 };

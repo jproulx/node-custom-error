@@ -1,9 +1,8 @@
 var should = require('should');
 var generateCustomError = require('./');
 var util = require('util');
-
 var TestError       = generateCustomError('TestError', { 'code' : 100, 'status' : 'blah' });
-var SubTestError    = generateCustomError('TestError', null, TestError);
+var SubTestError    = generateCustomError('TestError', { 'code' : 300 }, TestError);
 var SubTypeError    = generateCustomError('SubTypeError', null, TypeError);
 var ValidationError = generateCustomError('ValidationError', {
     'message' : 'Default Message',
@@ -17,14 +16,13 @@ function formatter(message) {
 formatter.prototype.method = function () {
     return 123;
 };
-var CustomError = generateCustomError('CustomError', { 'code' : 200 }, TypeError, formatter);
-
+var CustomError = generateCustomError('CustomError', { 'code' : 200 }, formatter);
+var SubCustomError = generateCustomError('SubCustomError', { }, CustomError);
 var errors = {
     'with new operator'          : new TestError('Message'),
     'without new operator'       : TestError('Message'),
     'with inherited constructor' : new SubTestError('Message')
 };
-
 describe('The custom error generator', function () {
     function create () {
         var args = Array.prototype.slice.call(arguments);
@@ -39,16 +37,6 @@ describe('The custom error generator', function () {
         create(undefined).should.throw();
         create(400).should.not.throw();
         create('TestError').should.not.throw();
-        return done();
-    });
-    it('should require inheritance from the Error prototype, if supplied', function (done) {
-        create('Testing', null, {}).should.throw();
-        create('Testing', null, TypeError).should.not.throw();
-        create('Testing', null, TestError).should.not.throw();
-        return done();
-    });
-    it('should be a valid Constructor function, if supplied', function (done) {
-        create('Testing', null, TypeError, {}).should.throw();
         return done();
     });
     it('should inherit from a parent Error, if supplied', function (done) {
@@ -90,7 +78,7 @@ describe('The custom error generator', function () {
         return done();
     });
     it('should allow for a custom constructor', function (done) {
-        var testerror = new CustomError('This is my message');
+        var testerror = new SubCustomError('This is my message');
         testerror.should.have.property('newMessage');
         testerror.newMessage.should.equal('This is my message');
         testerror.should.have.property('method');
