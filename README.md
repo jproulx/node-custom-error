@@ -4,7 +4,7 @@ node-custom-error
 
 [![NPM](https://nodei.co/npm/custom-error-generator.png)](https://nodei.co/npm/custom-error-generator/)
 
-Custom errors and exceptions in Node.js
+Custom errors and exceptions in Node.js -- http://jproulx.github.io/node-custom-error/
 
 ## Install
 
