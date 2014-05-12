@@ -1,6 +1,10 @@
 node-custom-error
 ===================
-[![Build Status](https://travis-ci.org/jproulx/node-custom-error.svg?branch=master)](https://travis-ci.org/jproulx/node-custom-error)[![devDependency Status](https://david-dm.org/jproulx/node-custom-error/dev-status.svg)](https://david-dm.org/jproulx/node-custom-error#info=devDependencies)[![Code Climate](https://codeclimate.com/github/jproulx/node-custom-error.png)](https://codeclimate.com/github/jproulx/node-custom-error)[![CodeClimate](https://codeclimate.com/github/jproulx/node-custom-error/coverage.png)](https://codeclimate.com/github/jproulx/node-custom-error)[![Coverage Status](https://coveralls.io/repos/jproulx/node-custom-error/badge.png?branch=master)](https://coveralls.io/r/jproulx/node-custom-error?branch=master)
+[![Build Status](http://img.shields.io/travis/jproulx/node-custom-error.svg)](https://travis-ci.org/jproulx/node-custom-error)
+[![Code Climate](http://img.shields.io/codeclimate/github/jproulx/node-custom-error.svg)](https://codeclimate.com/github/jproulx/node-custom-error)
+[![Coverage Status](http://img.shields.io/coveralls/jproulx/node-custom-error.svg)](https://coveralls.io/r/jproulx/node-custom-error?branch=master)
+[![Dependency Status](http://img.shields.io/gemnasium/jproulx/node-custom-error.svg)](https://gemnasium.com/jproulx/node-custom-error)
+
 
 [![NPM](https://nodei.co/npm/custom-error-generator.png)](https://nodei.co/npm/custom-error-generator/)
 
