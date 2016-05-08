@@ -42,9 +42,9 @@ module.exports = function createError (name, parameters, Constructor) {
     // Set up the custom properties for this Error object, if specified.
     // Create a new stack descriptor that includes the stacks for any errors
     // also passed in
-    function createStackDescriptor (errors, previous) {
+    function createStackDescriptor (errors, previous, proxy) {
         return function () {
-            var stack = previous.get();
+            var stack = previous.get.call(proxy);
             errors.forEach(function (error) {
                 stack += '\n';
                 stack += error.stack;
@@ -85,7 +85,7 @@ module.exports = function createError (name, parameters, Constructor) {
         // descriptor that includes the other error stacks
         if (errors.length > 0) {
             properties.stack = {
-                'get' : createStackDescriptor(errors, stackDescriptor)
+                'get' : createStackDescriptor(errors, stackDescriptor, proxy)
             };
         }
         // Always set the message manually, in case there was a default supplied
