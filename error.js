@@ -44,7 +44,12 @@ module.exports = function createError (name, parameters, Constructor) {
     // also passed in
     function createStackDescriptor (errors, previous) {
         return function () {
-            var stack = previous.get();
+            var stack = '';
+            if(previous.get){
+                stack = previous.get();
+            } else if(previous.value){
+                stack = previous.value;
+            }
             errors.forEach(function (error) {
                 stack += '\n';
                 stack += error.stack;
